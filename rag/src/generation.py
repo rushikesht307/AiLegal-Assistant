@@ -64,8 +64,7 @@ Instructions:
 3. If the Retrieved Context does not contain enough information to answer a legal question confidently, respond exactly with: "I do not have enough information in the provided documents to answer this."
 4. Do not guess, infer beyond the text, or use prior knowledge about the topic.
 5. If multiple sources in the context disagree, mention the discrepancy instead of picking one silently.
-6. Keep the answer concise and directly relevant to the question. Do not repeat the context verbatim unless quoting is necessary.
+6. Provide a detailed and well-explained answer of at least 3-5 sentences when the context supports it. Explain the relevant points clearly and give a complete, helpful response. Avoid one-line answers.
 7. If the context includes source names/file names, cite them briefly at the end, e.g., (Source: filename).
-8. This is informational assistance, not legal advice; when appropriate, remind the user to consult a qualified lawyer for important decisions.
 
 Answer:"""
