@@ -1,0 +1,62 @@
+# ---------- Python ----------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# ---------- Virtual Environment ----------
+.venv/
+venv/
+env/
+ENV/
+
+# ---------- Environment / Secrets ----------
+.env
+*.env
+.env.local
+config_secret.py
+
+# ---------- Database ----------
+*.db
+*.sqlite
+*.sqlite3
+database/legal_ai.db
+
+# ---------- Vector DB (RAG embeddings) ----------
+vector_db/
+!vector_db/.gitkeep
+
+# ---------- Uploaded & Generated Files ----------
+storage/uploaded_documents/*
+storage/extracted_text/*
+storage/generated_reports/*
+!storage/uploaded_documents/.gitkeep
+!storage/extracted_text/.gitkeep
+!storage/generated_reports/.gitkeep
+
+# ---------- ML Model Cache ----------
+# (sentence-transformers downloads models here)
+.cache/
+*.bin
+*.pt
+*.onnx
+
+# ---------- IDE / Editor ----------
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ---------- OS Junk ----------
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---------- Logs ----------
+*.log
+logs/
+
+# ---------- Node (if frontend adds it later) ----------
+node_modules/
+ 

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Legal Assistant</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <header class="app-header">
+    <div class="brand"><span>&#9878;</span> AI Legal Assistant</div>
+    <div class="doc-status" id="docStatus">&#128196; No document uploaded</div>
+  </header>
+
+  <main class="chat-wrap">
+    <div class="chat-inner" id="chatInner">
+      <div class="welcome" id="welcome">
+        <div class="big">&#9878;</div>
+        <h2>Your AI Legal Assistant</h2>
+        <p>Upload a legal document using the &#128206; button, then ask me anything.
+           I can classify it, extract clauses, find risks, and generate reports &mdash; all in one chat.</p>
+        <div class="suggestions">
+          <div class="chip" onclick="quickAsk('What type of document is this?')">What type of document is this?</div>
+          <div class="chip" onclick="quickAsk('Find the risky clauses')">Find the risky clauses</div>
+          <div class="chip" onclick="quickAsk('Generate a report')">Generate a report</div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div class="input-bar">
+    <div style="width:100%;max-width:820px;">
+      <div class="input-inner">
+        <input type="file" id="fileInput" hidden accept=".pdf,.docx,.png,.jpg,.jpeg,.tiff">
+        <button class="icon-btn" title="Upload document" onclick="document.getElementById('fileInput').click()">&#128206;</button>
+        <textarea id="chatInput" rows="1" placeholder="Ask about your document, or upload one to begin..."></textarea>
+        <button class="icon-btn send" title="Send" onclick="handleSend()">&#10148;</button>
+      </div>
+      <p class="hint">Upload a document with the &#128206; button &bull; The Planner Agent routes your question to the right agent</p>
+    </div>
+  </div>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
