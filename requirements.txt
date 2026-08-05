@@ -6,3 +6,14 @@ python-docx
 pytesseract
 pillow
 sentence-transformers
+langchain
+langchain-community
+langchain-experimental
+langchain-huggingface
+langchain-chroma
+langchain-google-genai
+chromadb
+pypdf
+docx2txt
+datasets
+python-dotenv

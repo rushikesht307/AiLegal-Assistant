@@ -1,0 +1,26 @@
+[
+  {
+    "type": "NDA",
+    "text": "NON-DISCLOSURE AGREEMENT. A Non-Disclosure Agreement is a legal contract between parties to protect confidential information. 1. Confidentiality: The Receiving Party shall not disclose Confidential Information to any third party without prior written consent of the Disclosing Party. 2. Term: Confidentiality obligations typically survive for a period of two to five years after termination of the agreement. 3. Return of Materials: Upon termination, all confidential materials shall be returned to the Disclosing Party or destroyed. 4. Non-Circumvention: The Receiving Party shall not use the information to bypass the Disclosing Party. 5. Governing Law: The agreement is governed by the applicable jurisdiction's laws. 6. Remedies: Breach may result in injunctive relief and damages."
+  },
+  {
+    "type": "Employment Contract",
+    "text": "EMPLOYMENT CONTRACT. An Employment Contract defines the relationship between an employer and an employee. 1. Position and Duties: Describes the job role, title, and responsibilities of the employee. 2. Compensation: States the salary, bonuses, incentives, and benefits payable. 3. Working Hours and Leave: Standard working hours and annual paid leave entitlement. 4. Probation: An initial probation period may apply. 5. Notice Period: Typically 30 to 90 days notice is required for termination by either party. 6. Confidentiality and Non-Compete: The employee must protect company information and may be restricted from competing. 7. Termination: Grounds and process for ending the employment."
+  },
+  {
+    "type": "Lease Agreement",
+    "text": "LEASE AGREEMENT. A Lease Agreement governs the rental of property between a landlord and a tenant. 1. Rent: The monthly rent amount and the due date for payment. 2. Security Deposit: A refundable deposit held by the landlord against damages. 3. Term: The lease duration, commonly eleven months in India, with renewal options. 4. Maintenance: The tenant must maintain the premises in good condition. 5. Use of Premises: Restrictions on how the property may be used. 6. Termination: Either party may terminate with a notice period, commonly 30 to 60 days. 7. Governing Law: The agreement is governed by local rent laws."
+  },
+  {
+    "type": "Service Agreement",
+    "text": "SERVICE AGREEMENT. A Service Agreement defines the terms of services between a provider and a client. 1. Scope of Services: The specific deliverables and services to be provided. 2. Payment Terms: Fees and invoices, commonly payable within thirty days of receipt. 3. Timelines: Delivery schedule and milestones. 4. Confidentiality: Both parties keep shared information confidential. 5. Intellectual Property: Ownership of work produced under the agreement. 6. Indemnification: The provider indemnifies the client against third-party claims. 7. Termination: Either party may terminate with written notice."
+  },
+  {
+    "type": "Privacy Policy",
+    "text": "PRIVACY POLICY. A Privacy Policy explains how an organization collects, uses, and protects personal data. 1. Information Collected: Name, email, payment details, and usage data collected from users. 2. Use of Data: To process orders, provide services, and improve the product. 3. Cookies: Cookies and tracking technologies used to enhance user experience. 4. Data Sharing: When and with whom personal data may be shared. 5. User Rights: Users may access, correct, or request deletion of their personal data. 6. Data Security: Reasonable technical and organizational measures protect personal data. 7. Contact: How users can reach the organization about privacy concerns."
+  },
+  {
+    "type": "Vendor Agreement",
+    "text": "VENDOR AGREEMENT. A Vendor Agreement governs the supply of goods or services from a vendor to a company. 1. Supply Terms: The vendor supplies goods or services as per the purchase order. 2. Delivery Schedule: Agreed delivery timelines and locations. 3. Payment: Payment terms, commonly within thirty days of a valid invoice. 4. Quality Standards: Goods must meet the agreed specifications and quality. 5. Warranties: The vendor warrants the goods against defects. 6. Liability: Limits on the vendor's liability for damages. 7. Termination: Conditions under which the agreement can be ended."
+  }
+]
