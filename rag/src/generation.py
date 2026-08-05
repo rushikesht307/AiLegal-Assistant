@@ -16,8 +16,22 @@ class Generator:
     def generate(self, prompt: str,) -> str:
 
         response = self.model.invoke(prompt)
+        content = response.content
 
-        return response.content
+        # flash-lite / newer Gemini can return a list of parts, not a plain string
+        if isinstance(content, str):
+            return content
+
+        if isinstance(content, list):
+            parts = []
+            for item in content:
+                if isinstance(item, dict):
+                    parts.append(item.get("text", ""))
+                else:
+                    parts.append(str(item))
+            return " ".join(p for p in parts if p).strip()
+
+        return str(content)
 
     def build_prompt(self, question: str, memory_context: str, rag_context: str, mode: str = "document") -> str:
         """

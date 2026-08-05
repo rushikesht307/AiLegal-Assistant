@@ -16,7 +16,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
-GENERATION_MODEL = "gemini-2.0-flash"
+GENERATION_MODEL = "gemini-3.1-flash-lite"
 API_KEY = os.getenv("GEMINI_API_KEY")
 
 BASE_DIR = Path(__file__).resolve().parent
