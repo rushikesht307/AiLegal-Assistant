@@ -18,6 +18,7 @@ from agents.classification_agent.classifier import classify
 from database.db import init_db
 from database.crud import add_document, get_all_documents
 from rag.pipeline import RAGPipeline
+from agents.planner_agent.planner import Planner          # NEW - Day 3
 
 app = FastAPI(title="AI Legal Assistant")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
@@ -32,6 +33,9 @@ try:
     rag._get_knowledge_retriever()      # load CUAD knowledge base once on startup
 except Exception as e:
     print("CUAD load will happen on first question:", e)
+
+# ---- Planner Agent (routes questions to the right agent) ----   NEW
+planner = Planner(rag)
 
 # session: is a document currently uploaded?
 SESSION = {"has_document": False}
@@ -80,23 +84,30 @@ async def upload(file: UploadFile = File(...)):
     }
 
 
-# ---------------- Chat: the 3 use cases via RAG ----------------
+# ---------------- Chat: routed through the Planner Agent (Day 3) ----------------
 class ChatRequest(BaseModel):
     question: str
     general: bool = False     # set True for a general legal question
 
 @app.post("/api/chat")
 def chat(req: ChatRequest):
-    result = rag.get_answer(
-        req.question,
-        has_document=SESSION["has_document"],
-        general=req.general,
-    )
-    return {
-        "status": "success",
-        "answer": result["answer"],
-        "mode": result["mode"],   # "document" or "knowledge"
-    }
+    try:
+        # Planner reads the question and routes to the right agent
+        result = planner.route(
+            req.question,
+            has_document=SESSION["has_document"],
+            general=req.general,
+        )
+        return {
+            "status": "success",
+            "agent":  result.get("agent", "Legal Q&A Agent"),   # which agent answered
+            "answer": result["answer"],
+            "mode":   result.get("mode", "knowledge"),          # "document" or "knowledge"
+        }
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return {"status": "error", "answer": f"Error: {str(e)}", "mode": "error"}
 
 
 # ---------------- Reset: clear the document, back to CUAD mode ----------------
@@ -128,7 +139,7 @@ def home():
 
 @app.get("/chat.html")
 def chat_page():
-    return FileResponse(os.path.join(FRONTEND, "chat.html")) # chat page ← NEW
+    return FileResponse(os.path.join(FRONTEND, "chat.html"))
 
 
 # ---------------- Run ----------------
