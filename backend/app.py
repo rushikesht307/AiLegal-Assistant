@@ -80,7 +80,7 @@ async def upload(file: UploadFile = File(...)):
     }
 
 
-# ---------------- Chat: the 3 use cases via RAG ----------------
+# Chat: the 3 use cases via RAG 
 class ChatRequest(BaseModel):
     question: str
     general: bool = False     # set True for a general legal question
@@ -99,7 +99,7 @@ def chat(req: ChatRequest):
     }
 
 
-# ---------------- Reset: clear the document, back to CUAD mode ----------------
+#  Reset: clear the document, back to CUAD mode 
 @app.post("/api/reset")
 def reset():
     SESSION["has_document"] = False
@@ -107,7 +107,7 @@ def reset():
     return {"status": "success", "message": "Cleared. Now answering from CUAD knowledge base."}
 
 
-# ---------------- List stored documents ----------------
+# - List stored documents 
 @app.get("/api/files")
 def list_files():
     return {"status": "success", "files": get_all_documents()}
@@ -116,8 +116,7 @@ def list_files():
 def health():
     return {"status": "ok", "mode": "document" if SESSION["has_document"] else "knowledge (CUAD)"}
 
-
-# ---------------- Serve the frontend ----------------
+# Serve the frontend -
 FRONTEND = os.path.join(ROOT, "frontend")
 app.mount("/css", StaticFiles(directory=os.path.join(FRONTEND, "css")), name="css")
 app.mount("/js", StaticFiles(directory=os.path.join(FRONTEND, "js")), name="js")
@@ -131,7 +130,7 @@ def chat_page():
     return FileResponse(os.path.join(FRONTEND, "chat.html")) # chat page ← NEW
 
 
-# ---------------- Run ----------------
+#  Run 
 if __name__ == "__main__":
     uvicorn.run("backend.app:app", host="127.0.0.1", port=8000, reload=True)
  
