@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Legal Assistant - Chat</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="chat-app">
+
+    <!-- Sidebar (ChatGPT style) -->
+    <aside class="sidebar">
+      <div class="sidebar-top">
+        <button class="new-chat" onclick="newChat()">&#43;&nbsp; New chat</button>
+      </div>
+      <div class="section-label">Uploaded Document</div>
+      <div class="sidebar-list" id="sideDocs">
+        <div class="side-item" style="color:var(--muted);"><span class="si">&#128196;</span><span class="st">No document uploaded</span></div>
+      </div>
+      <div class="sidebar-foot">
+        <a class="home-link" href="index.html"><span>&#127968;</span> Back to Home</a>
+      </div>
+    </aside>
+
+    <!-- Main chat -->
+    <main class="chat-main">
+      <div class="chat-header">
+        <div class="title"><span>&#9878;</span> AI Legal Assistant</div>
+        <div class="mode-pill" id="modePill">&#128218; Knowledge Mode</div>
+      </div>
+
+      <div class="chat-scroll" id="chatScroll">
+        <div class="chat-inner" id="chatInner">
+          <!-- Empty state -->
+          <div class="chat-empty" id="chatEmpty">
+            <div class="big">&#9878;</div>
+            <h2>How can I help you today?</h2>
+            <p>Ask a legal question, or upload a document with the &#128206; button to chat about it.</p>
+            <div class="prompt-grid">
+              <div class="prompt-card" onclick="quickAsk('What is a non-disclosure agreement?')">
+                <div class="pt">&#128196; What is an NDA?</div>
+                <div class="ps">Learn about non-disclosure agreements</div>
+              </div>
+              <div class="prompt-card" onclick="quickAsk('What is included in an employment contract?')">
+                <div class="pt">&#128188; Employment contracts</div>
+                <div class="ps">What they typically contain</div>
+              </div>
+              <div class="prompt-card" onclick="quickAsk('Explain a lease agreement')">
+                <div class="pt">&#127968; Lease agreements</div>
+                <div class="ps">Understand rental contracts</div>
+              </div>
+              <div class="prompt-card" onclick="quickAsk('What does a privacy policy explain?')">
+                <div class="pt">&#128274; Privacy policies</div>
+                <div class="ps">How data is collected & used</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Input (ChatGPT style) -->
+      <div class="input-zone">
+        <div class="input-box">
+          <input type="file" id="fileInput" hidden accept=".pdf,.docx,.png,.jpg,.jpeg,.txt">
+          <button class="attach-btn" title="Upload document" onclick="document.getElementById('fileInput').click()">&#128206;</button>
+          <textarea id="chatInput" rows="1" placeholder="Message AI Legal Assistant..."></textarea>
+          <button class="send-btn" id="sendBtn" title="Send" onclick="handleSend()">&#10148;</button>
+        </div>
+        <div class="input-hint">AI Legal Assistant can make mistakes. Verify important information with a lawyer.</div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/chat.js"></script>
+</body>
+</html>

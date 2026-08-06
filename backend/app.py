@@ -126,6 +126,10 @@ app.mount("/js", StaticFiles(directory=os.path.join(FRONTEND, "js")), name="js")
 def home():
     return FileResponse(os.path.join(FRONTEND, "index.html"))
 
+@app.get("/chat.html")
+def chat_page():
+    return FileResponse(os.path.join(FRONTEND, "chat.html")) # chat page ← NEW
+
 
 # ---------------- Run ----------------
 if __name__ == "__main__":
