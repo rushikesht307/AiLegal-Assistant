@@ -1,3 +1,8 @@
+"""
+backend/app.py  (Day 3-5 version)
+/api/chat routes through the LangGraph registry Planner
+(guardrail -> supervisor -> the chosen agent NODE).
+"""
 import os
 import sys
 
@@ -18,7 +23,7 @@ from agents.classification_agent.classifier import classify
 from database.db import init_db
 from database.crud import add_document, get_all_documents
 from rag.pipeline import RAGPipeline
-from agents.planner_agent.planner import Planner          # NEW - Day 3
+from agents.planner_agent.planner import Planner          # LangGraph registry planner
 
 app = FastAPI(title="AI Legal Assistant")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
@@ -27,90 +32,59 @@ init_db()
 EXTRACT_DIR = os.path.join("storage", "extracted_text")
 os.makedirs(EXTRACT_DIR, exist_ok=True)
 
-# ---- RAG pipeline (one instance for the whole app) ----
 rag = RAGPipeline()
 try:
-    rag._get_knowledge_retriever()      # load CUAD knowledge base once on startup
+    rag._get_knowledge_retriever()
 except Exception as e:
     print("CUAD load will happen on first question:", e)
 
-# ---- Planner Agent (routes questions to the right agent) ----   NEW
-planner = Planner(rag)
-
-# session: is a document currently uploaded?
+planner = Planner(rag)          # guardrail -> supervisor -> agent node
 SESSION = {"has_document": False}
 
 
-# ---------------- Upload: Day-1 pipeline + Day-2 RAG ingest ----------------
 @app.post("/api/upload")
 async def upload(file: UploadFile = File(...)):
     contents = await file.read()
-
-    # 1. validate & save (Adarsh)
     result = validate_and_save(file.filename, file.content_type, contents)
     if result["status"] == "error":
         return result
     file_id = result["file_id"]
     saved_path = result["saved_path"]
 
-    # 2. extract text (Vasanth) - handles image/pdf/docx
     text = extract_text(saved_path)
-
-    # save cleaned text
     text_path = os.path.join(EXTRACT_DIR, f"{file_id}.txt")
     with open(text_path, "w", encoding="utf-8") as f:
         f.write(text)
 
-    # 3. hybrid classify (Alankrutha)
     cls = classify(text)
-
-    # 4. store metadata (Meghana)
     add_document(file_id, result["file_name"], cls["document_type"], cls["confidence"], text_path)
-
-    # 5. Day-2: ingest the OCR text into RAG (handles scanned docs too)
     n_chunks = rag.ingest_document_text(text, source_name=result["file_name"])
     SESSION["has_document"] = True
 
-    # 6. return result
     return {
-        "status": "success",
-        "file_id": file_id,
-        "file_name": result["file_name"],
-        "document_type": cls["document_type"],
-        "confidence": cls["confidence"],
-        "method": cls["method"],
-        "word_count": len(text.split()),
-        "chunks": n_chunks,
+        "status": "success", "file_id": file_id, "file_name": result["file_name"],
+        "document_type": cls["document_type"], "confidence": cls["confidence"],
+        "method": cls["method"], "word_count": len(text.split()), "chunks": n_chunks,
     }
 
 
-# ---------------- Chat: routed through the Planner Agent (Day 3) ----------------
 class ChatRequest(BaseModel):
     question: str
-    general: bool = False     # set True for a general legal question
+    general: bool = False
 
 @app.post("/api/chat")
 def chat(req: ChatRequest):
     try:
-        # Planner reads the question and routes to the right agent
-        result = planner.route(
-            req.question,
-            has_document=SESSION["has_document"],
-            general=req.general,
-        )
-        return {
-            "status": "success",
-            "agent":  result.get("agent", "Legal Q&A Agent"),   # which agent answered
-            "answer": result["answer"],
-            "mode":   result.get("mode", "knowledge"),          # "document" or "knowledge"
-        }
+        result = planner.route(req.question,
+                               has_document=SESSION["has_document"], general=req.general)
+        return {"status": "success", "agent": result.get("agent", "Legal Q&A Agent"),
+                "answer": result["answer"], "mode": result.get("mode", "knowledge")}
     except Exception as e:
         import traceback
         traceback.print_exc()
         return {"status": "error", "answer": f"Error: {str(e)}", "mode": "error"}
 
 
-# ---------------- Reset: clear the document, back to CUAD mode ----------------
 @app.post("/api/reset")
 def reset():
     SESSION["has_document"] = False
@@ -118,7 +92,6 @@ def reset():
     return {"status": "success", "message": "Cleared. Now answering from CUAD knowledge base."}
 
 
-# ---------------- List stored documents ----------------
 @app.get("/api/files")
 def list_files():
     return {"status": "success", "files": get_all_documents()}
@@ -128,7 +101,6 @@ def health():
     return {"status": "ok", "mode": "document" if SESSION["has_document"] else "knowledge (CUAD)"}
 
 
-# ---------------- Serve the frontend ----------------
 FRONTEND = os.path.join(ROOT, "frontend")
 app.mount("/css", StaticFiles(directory=os.path.join(FRONTEND, "css")), name="css")
 app.mount("/js", StaticFiles(directory=os.path.join(FRONTEND, "js")), name="js")
@@ -142,7 +114,5 @@ def chat_page():
     return FileResponse(os.path.join(FRONTEND, "chat.html"))
 
 
-# ---------------- Run ----------------
 if __name__ == "__main__":
     uvicorn.run("backend.app:app", host="127.0.0.1", port=8000, reload=True)
- 
