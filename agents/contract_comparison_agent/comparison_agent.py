@@ -1,8 +1,3 @@
-"""
-Contract Comparison Agent (LangChain)   (Owner: Adarsh Singh)
-Compares the uploaded document against the CUAD standard reference.
-"""
-
 from langchain_core.prompts import ChatPromptTemplate
 from agents.base_agent import BaseLegalAgent
 

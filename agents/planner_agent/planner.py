@@ -1,30 +1,13 @@
 """
-Planner (Supervisor) Agent  -  LangGraph, registry-driven, one node per agent
-Architecture (proper LangGraph multi-agent supervisor):
-
-        START
-          v
-      [guardrail]  --blocked--> END
-          v (ok)
-      [supervisor]  (classifies intent -> chooses an agent key)
-          v (conditional edges)
-   +----+----+----+----+----+----+----+
-   v    v    v    v    v    v    v
-  [qa][clause][risk][compliance][comparison][obligation][report]   <- each agent = a NODE
-   +----+----+----+----+----+----+----+
-          v
-         END
-
-Every agent is registered in AGENT_REGISTRY. Each registry entry becomes a
-node in the graph automatically, so adding a new agent = one registry line.
-Falls back to plain routing if langgraph is not installed.
+Planner (Supervisor) Agent - LangGraph, one node per agent.
+Flow:  START -> guardrail -> supervisor -> [agent node] -> END
 """
 
-from typing import TypedDict, Optional
+from typing import TypedDict
+from langgraph.graph import StateGraph, START, END
 
 from guardrails.guardrails import validate_input, is_off_topic, add_disclaimer
 
-# ---- the specialized agents (all LangChain) ----
 from agents.legal_rag_agent.qa_agent import QAAgent
 from agents.clause_extraction_agent.clause_extractor import ClauseExtractionAgent
 from agents.risk_analysis_agent.risk_agent import RiskAnalysisAgent
@@ -32,178 +15,147 @@ from agents.compliance_agent.compliance_agent import ComplianceAgent
 from agents.contract_comparison_agent.comparison_agent import ContractComparisonAgent
 
 
-try:
-    from langgraph.graph import StateGraph, START, END
-    HAS_LANGGRAPH = True
-except Exception:
-    HAS_LANGGRAPH = False
-
-
-# =========================================================================
-# 1. AGENT REGISTRY  -  add an agent here and it automatically becomes a node
-#    key: {class, keywords that route to it}
-# =========================================================================
+# ---- registry: key -> routing keywords ----
 AGENT_REGISTRY = {
-    "risk": {
-        "class": RiskAnalysisAgent,
-        "keywords": ["risk", "risky", "red flag", "danger"],
-    },
-    "compliance": {
-        "class": ComplianceAgent,
-        "keywords": ["compliance", "compliant", "regulation", "gdpr"],
-    },
-    "comparison": {
-        "class": ContractComparisonAgent,
-        "keywords": ["compare", "difference", "version", "vs "],
-    },
-    "clause": {
-        "class": ClauseExtractionAgent,
-        "keywords": ["clause", "extract", "termination", "confidential", "liability"],
-    },
-    "qa": {                      # default fallback agent
-        "class": QAAgent,
-        "keywords": [],
-    },
+    "risk":       ["risk", "risky", "red flag", "danger"],
+    "compliance": ["compliance", "compliant", "regulation", "gdpr"],
+    "comparison": ["compare", "difference", "version", "vs "],
+    "clause":     ["clause", "extract", "termination", "confidential", "liability"],
+    "qa":         [],   # default
 }
 
-DEFAULT_AGENT = "qa"
 
-
-def classify_intent(question: str) -> str:
-    """Return the registry key of the agent that should handle this question."""
+def pick_agent(question):
     q = question.lower()
-    for key, cfg in AGENT_REGISTRY.items():
-        if any(kw in q for kw in cfg["keywords"]):
+    for key, keywords in AGENT_REGISTRY.items():
+        if any(kw in q for kw in keywords):
             return key
-    return DEFAULT_AGENT
+    return "qa"
 
 
-# =========================================================================
-# 2. Shared graph state
-# =========================================================================
-class PlannerState(TypedDict):
+class State(TypedDict):
     question: str
     has_document: bool
     general: bool
-    route: Optional[str]
-    agent: Optional[str]
-    answer: Optional[str]
-    mode: Optional[str]
+    route: str
+    agent: str
+    answer: str
+    mode: str
     blocked: bool
 
 
-# =========================================================================
-# 3. Planner
-# =========================================================================
 class Planner:
 
     def __init__(self, pipeline):
         self.pipeline = pipeline
-        self.graph = self._build_graph() if HAS_LANGGRAPH else None
+        self.graph = self._build_graph()
 
-    # ---- build an agent instance from the registry, with shared components ----
-    def _build_agent(self, key):
+    def _build(self, agent_cls):
         self.pipeline._get_knowledge_retriever()
-        agent_cls = AGENT_REGISTRY[key]["class"]
         return agent_cls(
-            knowledge_retriever=self.pipeline.knowledge_retriever,
-            document_retriever=self.pipeline.document_retriever,
-            generator=self.pipeline.generator,
-            memory=self.pipeline.memory,
-            router=self.pipeline.router,
+            self.pipeline.knowledge_retriever,
+            self.pipeline.document_retriever,
+            self.pipeline.generator,
+            self.pipeline.memory,
+            self.pipeline.router,
         )
 
-    # ================= GRAPH NODES =================
-    def _node_guardrail(self, state: PlannerState) -> PlannerState:
+    def _run(self, agent, state):
+        result = agent.run(state["question"], state["has_document"], state["general"])
+        state["agent"] = result["agent"]
+        state["answer"] = add_disclaimer(result["answer"])
+        state["mode"] = result["mode"]
+        return state
+
+    # ================= NODES =================
+    def guardrail(self, state):
         ok, msg = validate_input(state["question"])
-        if not ok:
-            state.update(blocked=True, agent="Guardrail", answer=msg, mode="blocked")
-            return state
-        if is_off_topic(state["question"]):
-            state.update(blocked=True, agent="Guardrail",
-                         answer="I'm a legal assistant, so I can only help with legal "
-                                "documents and legal questions.",
-                         mode="blocked")
-            return state
-        state["blocked"] = False
+        if not ok or is_off_topic(state["question"]):
+            state["blocked"] = True
+            state["agent"] = "Guardrail"
+            state["answer"] = msg if not ok else "I can only help with legal questions."
+            state["mode"] = "blocked"
+        else:
+            state["blocked"] = False
         return state
 
-    def _node_supervisor(self, state: PlannerState) -> PlannerState:
-        # the supervisor decides which agent node to route to
-        state["route"] = classify_intent(state["question"])
+    def supervisor(self, state):
+        state["route"] = pick_agent(state["question"])
         return state
 
-    def _make_agent_node(self, key):
-        """Factory: build a graph node function for one registry agent."""
-        def node(state: PlannerState) -> PlannerState:
-            agent = self._build_agent(key)
-            result = agent.run(state["question"], state["has_document"], state["general"])
-            state["agent"] = result["agent"]
-            state["answer"] = add_disclaimer(result["answer"])
-            state["mode"] = result["mode"]
-            return state
-        return node
+    def qa_node(self, state):
+        return self._run(self._build(QAAgent), state)
 
-    # ================= EDGE DECISIONS =================
-    def _after_guardrail(self, state: PlannerState) -> str:
-        return "blocked" if state["blocked"] else "supervisor"
+    def clause_node(self, state):
+        return self._run(self._build(ClauseExtractionAgent), state)
 
-    def _after_supervisor(self, state: PlannerState) -> str:
-        # return the agent node name to jump to
+    def risk_node(self, state):
+        return self._run(self._build(RiskAnalysisAgent), state)
+
+    def compliance_node(self, state):
+        return self._run(self._build(ComplianceAgent), state)
+
+    def comparison_node(self, state):
+        return self._run(self._build(ContractComparisonAgent), state)
+
+    # ================= EDGE DECISION FUNCTIONS (no lambdas) =================
+    def after_guardrail(self, state):
+        if state["blocked"]:
+            return "end"
+        return "supervisor"
+
+    def after_supervisor(self, state):
         return state["route"]
 
     # ================= BUILD THE GRAPH =================
     def _build_graph(self):
-        g = StateGraph(PlannerState)
+        g = StateGraph(State)
 
-        # core nodes
-        g.add_node("guardrail", self._node_guardrail)
-        g.add_node("supervisor", self._node_supervisor)
+        g.add_node("guardrail", self.guardrail)
+        g.add_node("supervisor", self.supervisor)
+        g.add_node("qa", self.qa_node)
+        g.add_node("clause", self.clause_node)
+        g.add_node("risk", self.risk_node)
+        g.add_node("compliance", self.compliance_node)
+        g.add_node("comparison", self.comparison_node)
 
-        # ONE NODE PER AGENT (from the registry)
-        for key in AGENT_REGISTRY:
-            g.add_node(key, self._make_agent_node(key))
-
-        # START -> guardrail
         g.add_edge(START, "guardrail")
 
-        # guardrail -> (blocked ? END : supervisor)
-        g.add_conditional_edges("guardrail", self._after_guardrail,
-                                {"blocked": END, "supervisor": "supervisor"})
+        # guardrail -> supervisor or END   (named function, no lambda)
+        g.add_conditional_edges(
+            "guardrail",
+            self.after_guardrail,
+            {"end": END, "supervisor": "supervisor"},
+        )
 
-        # supervisor -> the chosen agent node (conditional edges to every agent)
-        agent_paths = {key: key for key in AGENT_REGISTRY}
-        g.add_conditional_edges("supervisor", self._after_supervisor, agent_paths)
+        # supervisor -> chosen agent node   (named function, no lambda)
+        g.add_conditional_edges(
+            "supervisor",
+            self.after_supervisor,
+            {
+                "qa": "qa",
+                "clause": "clause",
+                "risk": "risk",
+                "compliance": "compliance",
+                "comparison": "comparison",
+            },
+        )
 
-        # every agent node -> END
-        for key in AGENT_REGISTRY:
-            g.add_edge(key, END)
+        g.add_edge("qa", END)
+        g.add_edge("clause", END)
+        g.add_edge("risk", END)
+        g.add_edge("compliance", END)
+        g.add_edge("comparison", END)
 
         return g.compile()
 
-    # ================= PUBLIC ENTRY =================
+    # ================= ENTRY =================
     def route(self, question, has_document=False, general=False):
         if has_document:
             self.pipeline._get_document_retriever()
-
-        if HAS_LANGGRAPH and self.graph is not None:
-            state: PlannerState = {
-                "question": question, "has_document": has_document, "general": general,
-                "route": None, "agent": None, "answer": None, "mode": None, "blocked": False,
-            }
-            out = self.graph.invoke(state)
-            return {"agent": out["agent"], "answer": out["answer"], "mode": out["mode"]}
-
-        # ---- fallback without langgraph ----
-        ok, msg = validate_input(question)
-        if not ok:
-            return {"agent": "Guardrail", "answer": msg, "mode": "blocked"}
-        if is_off_topic(question):
-            return {"agent": "Guardrail",
-                    "answer": "I'm a legal assistant and can only help with legal questions.",
-                    "mode": "blocked"}
-        key = classify_intent(question)
-        agent = self._build_agent(key)
-        result = agent.run(question, has_document, general)
-        result["answer"] = add_disclaimer(result["answer"])
-        return result
+        state = {
+            "question": question, "has_document": has_document, "general": general,
+            "route": "", "agent": "", "answer": "", "mode": "", "blocked": False,
+        }
+        out = self.graph.invoke(state)
+        return {"agent": out["agent"], "answer": out["answer"], "mode": out["mode"]}

@@ -1,5 +1,3 @@
-"""Compliance checklist   (Owner: Naini Meghana)"""
-
 COMPLIANCE_CHECKLIST = [
     "Confidentiality clause present",
     "Governing law clearly defined",

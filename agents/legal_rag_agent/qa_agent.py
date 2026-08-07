@@ -1,8 +1,3 @@
-"""
-Legal Q&A Agent (LangChain)   (Owner: Tejas Dighe)
-Answers general or document-specific legal questions, grounded in the context.
-"""
-
 from agents.base_agent import BaseLegalAgent
 
 

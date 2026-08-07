@@ -1,8 +1,3 @@
-"""
-Compliance Agent (LangChain)   (Owner: Bikkini Vasanth Kumar)
-Checks the document against a compliance checklist.
-"""
-
 from agents.base_agent import BaseLegalAgent
 from agents.compliance_agent.compliance_rules import COMPLIANCE_CHECKLIST
 

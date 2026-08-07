@@ -1,10 +1,4 @@
-"""
-Risk Analysis Agent (LangChain)   (Owner: Tejas Dighe)
-Flags risky / missing clauses and gives an overall risk level.
-"""
-
 from agents.base_agent import BaseLegalAgent
-
 
 class RiskAnalysisAgent(BaseLegalAgent):
     AGENT_NAME = "Risk Analysis Agent"
