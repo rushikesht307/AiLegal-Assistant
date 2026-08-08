@@ -1,5 +1,7 @@
 """
 Planner (Supervisor) Agent - LangGraph, one node per agent.
+Registry holds routing keywords; nodes are written explicitly.
+
 Flow:  START -> guardrail -> supervisor -> [agent node] -> END
 """
 
@@ -13,19 +15,24 @@ from agents.clause_extraction_agent.clause_extractor import ClauseExtractionAgen
 from agents.risk_analysis_agent.risk_agent import RiskAnalysisAgent
 from agents.compliance_agent.compliance_agent import ComplianceAgent
 from agents.contract_comparison_agent.comparison_agent import ContractComparisonAgent
+from agents.obligation_agent.obligation_agent import ObligationAgent
+from agents.report_generator_agent.report_generator import ReportGeneratorAgent
 
 
 # ---- registry: key -> routing keywords ----
 AGENT_REGISTRY = {
+    "report":     ["report", "full analysis", "generate report"],
     "risk":       ["risk", "risky", "red flag", "danger"],
     "compliance": ["compliance", "compliant", "regulation", "gdpr"],
     "comparison": ["compare", "difference", "version", "vs "],
+    "obligation": ["deadline", "obligation", "renew", "due date", "notice period"],
     "clause":     ["clause", "extract", "termination", "confidential", "liability"],
-    "qa":         [],   # default
+    "qa":         [],   # default fallback
 }
 
 
 def pick_agent(question):
+    """Use the registry keywords to decide which agent should handle it."""
     q = question.lower()
     for key, keywords in AGENT_REGISTRY.items():
         if any(kw in q for kw in keywords):
@@ -50,6 +57,7 @@ class Planner:
         self.pipeline = pipeline
         self.graph = self._build_graph()
 
+    # ---- helper: build an agent with the shared components ----
     def _build(self, agent_cls):
         self.pipeline._get_knowledge_retriever()
         return agent_cls(
@@ -60,6 +68,7 @@ class Planner:
             self.pipeline.router,
         )
 
+    # ---- helper: run an agent and fill the state ----
     def _run(self, agent, state):
         result = agent.run(state["question"], state["has_document"], state["general"])
         state["agent"] = result["agent"]
@@ -83,6 +92,7 @@ class Planner:
         state["route"] = pick_agent(state["question"])
         return state
 
+    # ---- one explicit node per agent ----
     def qa_node(self, state):
         return self._run(self._build(QAAgent), state)
 
@@ -98,7 +108,13 @@ class Planner:
     def comparison_node(self, state):
         return self._run(self._build(ContractComparisonAgent), state)
 
-    # ================= EDGE DECISION FUNCTIONS (no lambdas) =================
+    def obligation_node(self, state):
+        return self._run(self._build(ObligationAgent), state)
+
+    def report_node(self, state):
+        return self._run(self._build(ReportGeneratorAgent), state)
+
+    # ================= EDGE DECISION FUNCTIONS =================
     def after_guardrail(self, state):
         if state["blocked"]:
             return "end"
@@ -118,17 +134,20 @@ class Planner:
         g.add_node("risk", self.risk_node)
         g.add_node("compliance", self.compliance_node)
         g.add_node("comparison", self.comparison_node)
+        g.add_node("obligation", self.obligation_node)
+        g.add_node("report", self.report_node)
 
+        # START -> guardrail
         g.add_edge(START, "guardrail")
 
-        # guardrail -> supervisor or END   (named function, no lambda)
+        # guardrail -> supervisor or END
         g.add_conditional_edges(
             "guardrail",
             self.after_guardrail,
             {"end": END, "supervisor": "supervisor"},
         )
 
-        # supervisor -> chosen agent node   (named function, no lambda)
+        # supervisor -> the chosen agent node
         g.add_conditional_edges(
             "supervisor",
             self.after_supervisor,
@@ -138,14 +157,19 @@ class Planner:
                 "risk": "risk",
                 "compliance": "compliance",
                 "comparison": "comparison",
+                "obligation": "obligation",
+                "report": "report",
             },
         )
 
+        # every agent node -> END
         g.add_edge("qa", END)
         g.add_edge("clause", END)
         g.add_edge("risk", END)
         g.add_edge("compliance", END)
         g.add_edge("comparison", END)
+        g.add_edge("obligation", END)
+        g.add_edge("report", END)
 
         return g.compile()
 

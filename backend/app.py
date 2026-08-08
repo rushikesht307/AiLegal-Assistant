@@ -5,6 +5,7 @@ backend/app.py  (Day 3-5 version)
 """
 import os
 import sys
+from fastapi.responses import FileResponse
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
@@ -112,6 +113,15 @@ def home():
 @app.get("/chat.html")
 def chat_page():
     return FileResponse(os.path.join(FRONTEND, "chat.html"))
+
+# ----------------------Serve/download generated report
+@app.get("/api/report")
+def get_report():
+    import os
+    path = os.path.join("storage", "generated_reports", "legal_report.pdf")
+    if os.path.exists(path):
+        return FileResponse(path, media_type="application/pdf", filename="legal_report.pdf")
+    return {"status": "error", "message": "No report generated yet. Ask the chatbot to 'generate a report' first."}
 
 
 if __name__ == "__main__":

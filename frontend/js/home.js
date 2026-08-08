@@ -1,6 +1,3 @@
-/* AI Legal Assistant - Home page logic (Owner: Rushikesh Tambe)
-   Shows uploaded documents + generated reports, and lets you upload from home. */
-
 const API = "http://127.0.0.1:8000/api";
 
 // go to the chatbot page
@@ -8,9 +5,16 @@ function goChat() {
   window.location.href = "chat.html";
 }
 
-// load uploaded documents into the home dashboard
+// tile clicked -> open chat and auto-ask the question
+function askOnChat(question) {
+  localStorage.setItem("presetQuestion", question);   // chat.js picks this up
+  window.location.href = "chat.html";
+}
+
+// load uploaded documents into the home dashboard (if the panel exists)
 async function loadDocs() {
   const docList = document.getElementById("docList");
+  if (!docList) return;                                // no dashboard on this page
   try {
     const res = await fetch(`${API}/files`);
     const data = await res.json();
@@ -46,8 +50,7 @@ if (homeFile) {
       const res = await fetch(`${API}/upload`, { method: "POST", body: fd });
       const d = await res.json();
       if (d.status === "success") {
-        // reload the doc list, then go to chat
-        await loadDocs();
+        await loadDocs();                 // reload the doc list
         window.location.href = "chat.html";
       } else {
         alert("Upload failed: " + d.message);

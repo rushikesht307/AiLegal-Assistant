@@ -1,4 +1,3 @@
-/* AI Legal Assistant - ChatGPT-style UI (Owner: Rushikesh Tambe) */
 :root{
   --bg:#ffffff; --sidebar:#f7f7f8; --text:#1f2328; --muted:#6b7280;
   --line:#e5e7eb; --accent:#10a37f; --accent-dark:#0e8f6e; --navy:#0F2B46;
@@ -10,14 +9,22 @@ a{text-decoration:none;color:inherit;}
 button{font-family:inherit;cursor:pointer;}
 
 /* ============ HOME / WELCOME PAGE ============ */
-.home{height:100vh;overflow-y:auto;background:linear-gradient(180deg,#f7fbfa 0%,#ffffff 100%);}
+.home{
+  height:100vh;overflow-y:auto;
+  background:
+    radial-gradient(circle at 12% 28%, rgba(16,163,127,.10), transparent 22%),
+    radial-gradient(circle at 88% 35%, rgba(15,43,70,.07), transparent 22%),
+    radial-gradient(circle at 18% 82%, rgba(16,163,127,.06), transparent 20%),
+    radial-gradient(circle at 82% 80%, rgba(15,43,70,.05), transparent 20%),
+    linear-gradient(180deg,#f7fbfa 0%,#ffffff 100%);
+}
 .home-nav{display:flex;align-items:center;justify-content:space-between;padding:18px 40px;border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(255,255,255,.9);backdrop-filter:blur(8px);z-index:10;}
 .home-nav .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:19px;color:var(--navy);}
 .home-nav .brand .logo{font-size:24px;}
 .home-nav .start-btn{background:var(--accent);color:#fff;border:none;padding:10px 22px;border-radius:24px;font-weight:600;font-size:14px;transition:.2s;}
 .home-nav .start-btn:hover{background:var(--accent-dark);}
 
-.hero{max-width:820px;margin:0 auto;text-align:center;padding:70px 24px 40px;}
+.hero{max-width:1080px;margin:0 auto;text-align:center;padding:70px 24px 40px;}
 .hero .badge{display:inline-block;background:#e7f7f2;color:var(--accent-dark);padding:6px 16px;border-radius:20px;font-size:13px;font-weight:600;margin-bottom:22px;}
 .hero h1{font-size:44px;font-weight:800;line-height:1.15;color:var(--navy);letter-spacing:-1px;}
 .hero h1 .grad{background:linear-gradient(90deg,#10a37f,#0e8f6e);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
@@ -29,10 +36,16 @@ button{font-family:inherit;cursor:pointer;}
 .btn-ghost{background:#fff;color:var(--navy);border:1px solid var(--line);}
 .btn-ghost:hover{background:#f7f7f8;}
 
+/* stats strip - fills the width, big green numbers */
+.stats-row{display:flex;gap:48px;justify-content:center;flex-wrap:wrap;margin-top:34px;}
+.stat-item{text-align:center;}
+.stat-item .num{font-size:30px;font-weight:800;color:var(--accent);line-height:1;}
+.stat-item .lbl{font-size:13px;color:var(--muted);margin-top:6px;}
+
 /* Feature cards */
-.features{max-width:1000px;margin:20px auto 10px;padding:0 24px;display:grid;grid-template-columns:repeat(4,1fr);gap:18px;}
-.feat{background:#fff;border:1px solid var(--line);border-radius:16px;padding:24px 18px;text-align:center;transition:.2s;}
-.feat:hover{transform:translateY(-4px);box-shadow:0 12px 30px rgba(15,43,70,.07);}
+.features{max-width:1000px;margin:20px auto 40px;padding:0 24px;display:grid;grid-template-columns:repeat(4,1fr);gap:18px;}
+.feat{background:#fff;border:1px solid var(--line);border-radius:16px;padding:24px 18px;text-align:center;transition:.2s;cursor:pointer;}
+.feat:hover{transform:translateY(-5px);box-shadow:0 14px 32px rgba(15,43,70,.10);}
 .feat .ic{width:48px;height:48px;background:#e7f7f2;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;margin:0 auto 12px;}
 .feat h3{font-size:15px;color:var(--navy);margin-bottom:6px;}
 .feat p{font-size:12.5px;color:var(--muted);line-height:1.5;}
@@ -88,7 +101,7 @@ button{font-family:inherit;cursor:pointer;}
 .chat-empty h2{font-size:26px;color:var(--navy);margin-bottom:8px;}
 .chat-empty p{color:var(--muted);max-width:460px;margin-bottom:26px;}
 .prompt-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:560px;width:100%;}
-.prompt-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;text-align:left;transition:.2s;}
+.prompt-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;text-align:left;transition:.2s;cursor:pointer;}
 .prompt-card:hover{border-color:var(--accent);background:#f9fdfc;}
 .prompt-card .pt{font-weight:600;font-size:13.5px;color:var(--navy);}
 .prompt-card .ps{font-size:12px;color:var(--muted);margin-top:3px;}
@@ -110,6 +123,13 @@ button{font-family:inherit;cursor:pointer;}
 .typing-dots span:nth-child(3){animation-delay:.4s;}
 @keyframes blink{0%,60%,100%{opacity:.3}30%{opacity:1}}
 
+/* agent tag shown above a bot answer */
+.agent-tag{display:inline-block;font-size:11px;font-weight:600;background:#e0ecff;color:var(--accent-dark);padding:3px 10px;border-radius:12px;margin-bottom:8px;}
+
+/* report download button */
+.report-btn{display:inline-block;margin-top:12px;padding:9px 18px;background:var(--accent);color:#fff !important;border-radius:10px;font-size:13.5px;font-weight:600;text-decoration:none;transition:.2s;}
+.report-btn:hover{background:var(--accent-dark);}
+
 /* Input bar - ChatGPT style */
 .input-zone{padding:14px 20px 20px;background:linear-gradient(180deg,rgba(255,255,255,0),#fff 30%);}
 .input-box{max-width:780px;margin:0 auto;background:#fff;border:1px solid var(--line);border-radius:26px;padding:8px 8px 8px 8px;display:flex;align-items:flex-end;gap:8px;box-shadow:0 2px 12px rgba(0,0,0,.05);}
@@ -128,4 +148,5 @@ button{font-family:inherit;cursor:pointer;}
   .hero h1{font-size:32px;}
   .sidebar{display:none;}
   .prompt-grid{grid-template-columns:1fr;}
+  .stats-row{gap:28px;}
 }

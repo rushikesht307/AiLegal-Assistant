@@ -26,32 +26,37 @@
         <button class="btn btn-ghost" onclick="document.getElementById('homeFile').click()">&#128206; Upload Document</button>
         <input type="file" id="homeFile" hidden accept=".pdf,.docx,.png,.jpg,.jpeg,.txt">
       </div>
-    </section>
 
-    <!-- Feature cards -->
-    <section class="features">
-      <div class="feat"><div class="ic">&#128196;</div><h3>Document Chat</h3><p>Ask questions about your uploaded legal documents.</p></div>
-      <div class="feat"><div class="ic">&#128218;</div><h3>Legal Knowledge</h3><p>General legal answers from the CUAD knowledge base.</p></div>
-      <div class="feat"><div class="ic">&#9888;&#65039;</div><h3>Risk Detection</h3><p>Identify risky clauses and missing protections.</p></div>
-      <div class="feat"><div class="ic">&#128202;</div><h3>Smart Reports</h3><p>Generate detailed analysis reports on demand.</p></div>
-    </section>
-
-    <!-- Dashboard: uploaded docs + reports -->
-    <section class="dash">
-      <div class="panel">
-        <h2>&#128193; Uploaded Documents</h2>
-        <div class="sub">Documents you've analyzed</div>
-        <div id="docList">
-          <div class="empty">No documents yet. Upload one to get started.</div>
-        </div>
+      <!-- stats strip (fills the width, more engaging) -->
+      <div class="stats-row">
+        <div class="stat-item"><div class="num">7</div><div class="lbl">AI Agents</div></div>
+        <div class="stat-item"><div class="num">510+</div><div class="lbl">CUAD Contracts</div></div>
+        <div class="stat-item"><div class="num">41</div><div class="lbl">Clause Types</div></div>
+        <div class="stat-item"><div class="num">2</div><div class="lbl">Knowledge Modes</div></div>
       </div>
+    </section>
 
-      <div class="panel">
-        <h2>&#128203; Generated Reports</h2>
-        <div class="sub">Analysis reports ready to view</div>
-        <div id="repList">
-          <div class="empty">No reports yet. Ask the chatbot to "generate a report".</div>
-        </div>
+    <!-- Feature tiles (now clickable) -->
+    <section class="features">
+      <div class="feat" onclick="askOnChat('What is this document about?')">
+        <div class="ic">&#128196;</div>
+        <h3>Document Chat</h3>
+        <p>Ask questions about your uploaded legal documents.</p>
+      </div>
+      <div class="feat" onclick="askOnChat('What is a non-disclosure agreement?')">
+        <div class="ic">&#128218;</div>
+        <h3>Legal Knowledge</h3>
+        <p>General legal answers from the CUAD knowledge base.</p>
+      </div>
+      <div class="feat" onclick="askOnChat('What are the risks in this document?')">
+        <div class="ic">&#9888;&#65039;</div>
+        <h3>Risk Detection</h3>
+        <p>Identify risky clauses and missing protections.</p>
+      </div>
+      <div class="feat" onclick="askOnChat('Generate a report')">
+        <div class="ic">&#128202;</div>
+        <h3>Smart Reports</h3>
+        <p>Generate detailed analysis reports on demand.</p>
       </div>
     </section>
   </div>

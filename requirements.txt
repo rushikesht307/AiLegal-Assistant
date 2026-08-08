@@ -17,3 +17,6 @@ pypdf
 docx2txt
 datasets
 python-dotenv
+langgraph
+langchain-core
+reportlab
