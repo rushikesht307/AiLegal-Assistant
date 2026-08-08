@@ -59,4 +59,4 @@ logs/
 
 # ---------- Node (if frontend adds it later) ----------
 node_modules/
- 
+core
