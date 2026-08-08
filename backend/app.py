@@ -25,9 +25,11 @@ from database.db import init_db
 from database.crud import add_document, get_all_documents
 from rag.pipeline import RAGPipeline
 from agents.planner_agent.planner import Planner          # LangGraph registry planner
+from fastapi.staticfiles import StaticFiles
 
 app = FastAPI(title="AI Legal Assistant")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")
 
 init_db()
 EXTRACT_DIR = os.path.join("storage", "extracted_text")
