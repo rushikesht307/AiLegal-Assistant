@@ -12,6 +12,7 @@ ALLOWED_TYPES = {
     "image/png": ".png",
     "image/jpeg": ".jpg",
     "image/tiff": ".tiff",
+    "text/plain" : ".txt"
 }
 
 MAX_SIZE = 50 * 1024 * 1024  # 50 MB
