@@ -1,5 +1,4 @@
 class Memory:
-
     def __init__(self):
         self.messages = []
 
@@ -8,7 +7,6 @@ class Memory:
         question: str,
         answer: str,
     ):
-
         self.messages.append(
             {
                 "question": question,
@@ -17,16 +15,11 @@ class Memory:
         )
 
         self.messages = self.messages[-5:]
-
     def get_memory(self) -> str:
-
         if not self.messages:
             return ""
-
         context = []
-
         for item in self.messages:
-
             context.append(
                 f"User: {item['question']}"
             )
