@@ -47,89 +47,112 @@ def parse_docx(path: str) -> str:
     return "\n".join(p.text for p in d.paragraphs)
 
 
+# def extract_from_pdf(path):
+
+#     """
+#     Handle:
+
+#     1. Text PDFs
+#     2. Scanned PDFs
+#     3. Hybrid PDFs
+
+#     Logic:
+
+#     Text exists?
+#         YES -> Direct extraction
+#         NO  -> OCR
+#     """
+
+#     # Verify PyMuPDF
+#     if not fitz:
+#         return (
+#             "[PyMuPDF not available "
+#             "- install pymupdf]"
+#         )
+
+#     # Open PDF
+#     doc = fitz.open(path)
+
+#     # Store complete extracted text
+#     full_text = ""
+
+#     # Loop through all pages
+#     for page in doc:
+
+#         # Extract page text
+#         text = page.get_text().strip()
+
+#         # -------------------------------------
+#         # DIGITAL PAGE
+#         # -------------------------------------
+#         if len(text) > 50:
+
+#             # Directly use extracted text
+#             full_text += "\n" + text
+
+#         # -------------------------------------
+#         # SCANNED PAGE
+#         # -------------------------------------
+#         else:
+
+#             # OCR available?
+#             if pytesseract:
+
+#                 # Convert page into image
+#                 image = page.get_pixmap(dpi=300)
+
+#                 # Convert Pixmap -> PIL Image
+#                 img = Image.frombytes(
+#                     "RGB",
+#                     (image.width, image.height),
+#                     image.samples
+#                 )
+
+#                 # OCR extraction
+#                 ocr_text = (
+#                     pytesseract.image_to_string(
+#                         img
+#                     )
+#                 )
+
+#                 # Append OCR result
+#                 full_text += "\n" + ocr_text
+
+#             else:
+
+#                 # OCR library missing
+#                 full_text += (
+#                     "\n[Scanned page - OCR not available]"
+#                 )
+
+#     # Close PDF
+#     doc.close()
+
+#     # Return extracted content
+#     return full_text
+
 def extract_from_pdf(path):
-
-    """
-    Handle:
-
-    1. Text PDFs
-    2. Scanned PDFs
-    3. Hybrid PDFs
-
-    Logic:
-
-    Text exists?
-        YES -> Direct extraction
-        NO  -> OCR
-    """
-
-    # Verify PyMuPDF
-    if not fitz:
-        return (
-            "[PyMuPDF not available "
-            "- install pymupdf]"
-        )
-
-    # Open PDF
     doc = fitz.open(path)
-
-    # Store complete extracted text
-    full_text = ""
-
-    # Loop through all pages
+    full_text = []
+ 
     for page in doc:
-
-        # Extract page text
-        text = page.get_text().strip()
-
-        # -------------------------------------
-        # DIGITAL PAGE
-        # -------------------------------------
-        if len(text) > 50:
-
-            # Directly use extracted text
-            full_text += "\n" + text
-
-        # -------------------------------------
-        # SCANNED PAGE
-        # -------------------------------------
-        else:
-
-            # OCR available?
+        # Extract normal text
+        page_text = page.get_text("text")
+        # Extract images from same page
+        img_text = ""
+        for img in page.get_images(full=True):
+            xref = img[0]
+            base_image = doc.extract_image(xref)
+            image_bytes = base_image["image"]
+            pil_img = Image.open(io.BytesIO(image_bytes))
             if pytesseract:
+                img_text += "\n" + pytesseract.image_to_string(pil_img)
 
-                # Convert page into image
-                image = page.get_pixmap(dpi=300)
+        combined = page_text + "\n" + img_text
+        full_text.append(combined)
 
-                # Convert Pixmap -> PIL Image
-                img = Image.frombytes(
-                    "RGB",
-                    (image.width, image.height),
-                    image.samples
-                )
-
-                # OCR extraction
-                ocr_text = (
-                    pytesseract.image_to_string(
-                        img
-                    )
-                )
-
-                # Append OCR result
-                full_text += "\n" + ocr_text
-
-            else:
-
-                # OCR library missing
-                full_text += (
-                    "\n[Scanned page - OCR not available]"
-                )
-
-    # Close PDF
     doc.close()
-
-    # Return extracted content
-    return full_text
+    return clean_text("\n".join(full_text))
 
 def extract_text(saved_path: str) -> str:
     """

@@ -47,15 +47,20 @@ async function loadSidebar() {
     const res = await fetch(`${API}/files`);
     const data = await res.json();
     if (data.files && data.files.length) {
-      const latest = data.files[0];
       hasDocument = true;
-      sideDocs.innerHTML =
-        `<div class="side-item"><span class="si">&#128196;</span><span class="st">${latest.file_name}</span></div>`;
+      // show ALL uploaded documents, newest first
+      sideDocs.innerHTML = data.files.map(f =>
+        `<div class="side-item">
+           <span class="si">&#128196;</span>
+           <span class="st">${f.file_name}</span>
+         </div>`
+      ).join("");
       modePill.innerHTML = "&#128196; Document Mode";
       modePill.classList.add("doc");
     }
   } catch (err) { /* backend not reachable - keep default */ }
 }
+
 loadSidebar();
 
 /* auto-ask a preset question that came from a home-page tile */
@@ -74,8 +79,9 @@ async function newChat() {
   hasDocument = false;
   modePill.innerHTML = "&#128218; Knowledge Mode";
   modePill.classList.remove("doc");
-  sideDocs.innerHTML =
-    `<div class="side-item" style="color:var(--muted);"><span class="si">&#128196;</span><span class="st">No document uploaded</span></div>`;
+  // sideDocs.innerHTML =
+  //   `<div class="side-item" style="color:var(--muted);"><span class="si">&#128196;</span><span class="st">No document uploaded</span></div>`;
+  await loadSidebar();
   chatInner.innerHTML = "";
   location.reload();
 }
