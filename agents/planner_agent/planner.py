@@ -47,17 +47,24 @@ AGENT_REGISTRY = {
     },
 
     "risk": {
-        "keywords": [
-            "risk",
-            "risky",
-            "red flag",
-            "danger",
-            "liability",
-            "exposure"
-        ],
-        "description": (
-            "Identify contractual risks, liabilities, red flags, "
-            "legal exposure and risky provisions."
+    "keywords": [
+        "risk",
+        "risks",
+        "risk analysis",
+        "legal risk",
+        "red flag",
+        "red flags",
+        "exposure",
+        "danger",
+        "liability",
+        "contract risks",
+        "identify risks"
+    ],
+    "description": (
+        "Perform a comprehensive legal risk assessment. "
+        "Identify contractual risks, missing protections, "
+        "liabilities, compliance concerns, and provide "
+        "an overall risk rating with recommendations."
         ),
     },
 
